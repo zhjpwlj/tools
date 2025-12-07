@@ -1,67 +1,54 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-<meta charset="UTF-8">
-<title>Code & URL Extractor</title>
+<meta charset="UTF-8" />
+<title>Extractor</title>
 <style>
-  body { font-family: Arial; margin: 20px; }
-  textarea { width: 100%; height: 140px; padding: 10px; }
-  button { margin-top: 10px; padding: 8px 15px; }
-  pre { background: #f3f3f3; padding: 10px; border-radius: 5px; max-height: 200px; overflow-y: auto; }
-  .section { margin-top: 30px; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
+    body { font-family: sans-serif; padding: 20px; }
+    textarea { width: 100%; height: 180px; padding: 10px; }
+    button { padding: 8px 16px; margin-top: 12px; cursor: pointer; }
+    .section { margin-top: 40px; }
 </style>
 </head>
 <body>
 
-<h1>Google Classroom Code & URL Extractor</h1>
-<p>把长文本贴进去，一键提取班级码 + URL（自动去重）</p>
+<h2>文本提取器 (Class Code + URLs)</h2>
 
-<!-- ======================= 输入框 ======================= -->
-<textarea id="input"></textarea><br>
-<button onclick="extractAll()">✨ 提取</button>
-<button onclick="clearInput()">清空</button>
+<textarea id="input" placeholder="把超长文本贴这里..."></textarea>
+<br>
+<button onclick="extractAll()">提取！</button>
 
-<!-- ======================= 班级码结果 ======================= -->
 <div class="section">
-  <h2>Google Classroom 班级码</h2>
-  <p>自动匹配 6–8 位字母数字串（含字母）</p>
-  <pre id="codesOutput"></pre>
+    <h3>🎒 Google Classroom Class Codes（长度=8）</h3>
+    <pre id="codes"></pre>
 </div>
 
-<!-- ======================= URL 结果 ======================= -->
 <div class="section">
-  <h2>URL 提取（自动去重）</h2>
-  <pre id="urlOutput"></pre>
+    <h3>🔗 URLs（自动去重 no ダブリ）</h3>
+    <pre id="urls"></pre>
 </div>
 
 <script>
 function extractAll() {
-  const text = document.getElementById("input").value;
+    const text = document.getElementById("input").value;
 
-  /* ---- 1) 提取 Classroom 班级码 ---- */
-  const codeRegex = /\b([A-Za-z0-9]{6,8})\b/g;
-  const foundCodes = new Set();
-  let m;
+    // --- 提取 class code：只保留长度=8 的字母数字组合 ---
+    // Google Classroom code：通常[a-z0-9]组成，这里按你要求严格长度8过滤
+    const rawCodes = text.toLowerCase().match(/[a-z0-9]{8}/g) || [];
+    const uniqueCodes = [...new Set(rawCodes)];
 
-  while ((m = codeRegex.exec(text)) !== null) {
-    const s = m[1];
-    if (/[A-Za-z]/.test(s)) foundCodes.add(s.toLowerCase());
-  }
+    // 输出
+    document.getElementById("codes").textContent =
+        uniqueCodes.length ? uniqueCodes.join("\n") : "（没有找到长度为 8 的代码）";
 
-  document.getElementById("codesOutput").textContent =
-    [...foundCodes].join("\n") || "（未找到）";
+    // --- 提取 URL（自动去重） ---
+    const urlRegex = /(https?:\/\/[^\s]+)/gi;
+    const rawUrls = text.match(urlRegex) || [];
+    const uniqueUrls = [...new Set(rawUrls)];
 
-  /* ---- 2) 提取 URL（自动去重） ---- */
-  const urlRegex = /(https?:\/\/[\w.-]+(?:\/[\w\-._~:/?#[\]@!$&'()*+,;=%]*)?)/gi;
-  const urls = text.match(urlRegex) || [];
-  const uniqueUrls = [...new Set(urls)];
-
-  document.getElementById("urlOutput").textContent =
-    uniqueUrls.join("\n") || "（未找到）";
-}
-
-function clearInput() {
-  document.getElementById("input").value = "";
+    // 输出
+    document.getElementById("urls").textContent =
+        uniqueUrls.length ? uniqueUrls.join("\n") : "（没有找到 URL）";
 }
 </script>
 
