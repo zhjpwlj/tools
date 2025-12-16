@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>纸张形状布局计算器 - 带反推模式</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 30px;
+        }
+        
+        header {
+            grid-column: 1 / -1;
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .mode-toggle {
+            display: flex;
+            justify-content: center;
+            margin-top: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 5px;
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .mode-btn {
+            padding: 8px 20px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .mode-btn.active {
+            background: white;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            color: #3498db;
+        }
+        
+        .control-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            height: fit-content;
+        }
+        
+        .control-group {
+            margin-bottom: 25px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .control-group:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        
+        h2 {
+            color: #3498db;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        h2 i {
+            color: #2980b9;
+        }
+        
+        .input-row {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 15px;
+        }
+        
+        label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #34495e;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        select, input {
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        select:focus, input:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+        
+        .size-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .shape-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .shape-option {
+            text-align: center;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .shape-option:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .shape-option.active {
+            border-color: #3498db;
+            background-color: #ebf5fb;
+        }
+        
+        .shape-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #3498db;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(to right, #3498db, #2980b9);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .btn:hover {
+            background: linear-gradient(to right, #2980b9, #1c5a7a);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(41, 128, 185, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(to right, #95a5a6, #7f8c8d);
+        }
+        
+        .btn-secondary:hover {
+            background: linear-gradient(to right, #7f8c8d, #6c7b7d);
+            box-shadow: 0 5px 15px rgba(127, 140, 141, 0.4);
+        }
+        
+        .visualization-area {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .paper-container {
+            flex-grow: 1;
+            border: 2px dashed #bdc3c7;
+            border-radius: 10px;
+            background-color: #f8f9fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 20px;
+            min-height: 500px;
+        }
+        
+        .paper {
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+        
+        .title-area {
+            background-color: #f1f8ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #3498db;
+            font-weight: bold;
+            border-bottom: 2px dashed #3498db;
+        }
+        
+        .results-panel {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+        
+        .result-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.05);
+        }
+        
+        .result-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin: 5px 0;
+        }
+        
+        .result-label {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .shape {
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+        
+        .circle {
+            border-radius: 50%;
+            background-color: rgba(52, 152, 219, 0.8);
+            border: 2px solid #2980b9;
+        }
+        
+        .square {
+            background-color: rgba(46, 204, 113, 0.8);
+            border: 2px solid #27ae60;
+        }
+        
+        .rectangle {
+            background-color: rgba(155, 89, 182, 0.8);
+            border: 2px solid #8e44ad;
+        }
+        
+        .instructions {
+            background-color: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin-top: 30px;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        
+        .mode-section {
+            display: none;
+        }
+        
+        .mode-section.active {
+            display: block;
+        }
+        
+        @media (max-width: 1100px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            
+            .results-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .size-inputs, .shape-options {
+                grid-template-columns: 1fr;
+            }
+            
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-calculator"></i> 纸张形状布局计算器</h1>
+            <p class="subtitle">选择纸张尺寸，设置标题区域，然后计算并可视化圆形、正方形或长方形的最佳排列方式</p>
+            
+            <div class="mode-toggle">
+                <button id="normal-mode-btn" class="mode-btn active">
+                    <i class="fas fa-ruler"></i> 正常模式
+                </button>
+                <button id="reverse-mode-btn" class="mode-btn">
+                    <i class="fas fa-search"></i> 反推模式
+                </button>
+            </div>
+        </header>
+        
+        <div class="control-panel">
+            <!-- 正常模式 -->
+            <div id="normal-mode" class="mode-section active">
+                <div class="control-group">
+                    <h2><i class="fas fa-paperclip"></i> 纸张设置</h2>
+                    <div class="input-row">
+                        <label for="paper-size"><i class="fas fa-expand"></i> 纸张尺寸</label>
+                        <select id="paper-size">
+                            <option value="a4">A4 (210mm × 297mm)</option>
+                            <option value="a3">A3 (297mm × 420mm)</option>
+                            <option value="letter">Letter (8.5" × 11")</option>
+                            <option value="legal">Legal (8.5" × 14")</option>
+                            <option value="custom">自定义尺寸</option>
+                        </select>
+                    </div>
+                    
+                    <div class="size-inputs" id="custom-size-inputs" style="display: none;">
+                        <div class="input-row">
+                            <label for="paper-width"><i class="fas fa-arrows-alt-h"></i> 纸张宽度 (mm)</label>
+                            <input type="number" id="paper-width" min="50" max="1000" value="210">
+                        </div>
+                        <div class="input-row">
+                            <label for="paper-height"><i class="fas fa-arrows-alt-v"></i> 纸张高度 (mm)</label>
+                            <input type="number" id="paper-height" min="50" max="1000" value="297">
+                        </div>
+                    </div>
+                    
+                    <div class="input-row">
+                        <label for="title-height"><i class="fas fa-heading"></i> 标题区域高度 (mm)</label>
+                        <input type="number" id="title-height" min="0" max="100" value="30">
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <h2><i class="fas fa-shapes"></i> 形状设置</h2>
+                    <div class="shape-options">
+                        <div class="shape-option active" data-shape="circle">
+                            <div class="shape-icon"><i class="fas fa-circle"></i></div>
+                            <div>圆形</div>
+                        </div>
+                        <div class="shape-option" data-shape="square">
+                            <div class="shape-icon"><i class="fas fa-square"></i></div>
+                            <div>正方形</div>
+                        </div>
+                        <div class="shape-option" data-shape="rectangle">
+                            <div class="shape-icon"><i class="fas fa-rectangle-landscape"></i></div>
+                            <div>长方形</div>
+                        </div>
+                    </div>
+                    
+                    <div class="input-row">
+                        <label for="shape-size"><i class="fas fa-ruler"></i> 形状尺寸 (mm)</label>
+                        <input type="number" id="shape-size" min="5" max="200" value="30">
+                    </div>
+                    
+                    <div class="input-row" id="shape-size2-container" style="display: none;">
+                        <label for="shape-size2"><i class="fas fa-ruler-vertical"></i> 高度 (长方形) (mm)</label>
+                        <input type="number" id="shape-size2" min="5" max="200" value="20">
+                    </div>
+                    
+                    <div class="input-row">
+                        <label for="spacing"><i class="fas fa-arrows-alt"></i> 形状间距 (mm)</label>
+                        <input type="number" id="spacing" min="0" max="50" value="5">
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <h2><i class="fas fa-cogs"></i> 计算选项</h2>
+                    <div class="input-row">
+                        <label for="arrangement"><i class="fas fa-th"></i> 排列方式</label>
+                        <select id="arrangement">
+                            <option value="grid">网格排列</option>
+                            <option value="offset">交错排列 (仅圆形)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="input-row">
+                        <label for="maximize"><i class="fas fa-expand-arrows-alt"></i> 优化目标</label>
+                        <select id="maximize">
+                            <option value="count">最大化形状数量</option>
+                            <option value="size">最大化形状大小</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button id="calculate-btn" class="btn">
+                    <i class="fas fa-calculator"></i> 计算并可视化布局
+                </button>
+            </div>
+            
+            <!-- 反推模式 -->
+            <div id="reverse-mode" class="mode-section">
+                <div class="control-group">
+                    <h2><i class="fas fa-paperclip"></i> 纸张设置</h2>
+                    <div class="input-row">
+                        <label for="reverse-paper-size"><i class="fas fa-expand"></i> 纸张尺寸</label>
+                        <select id="reverse-paper-size">
+                            <option value="a4">A4 (210mm × 297mm)</option>
+                            <option value="a3">A3 (297mm × 420mm)</option>
+                            <option value="letter">Letter (8.5" × 11")</option>
+                            <option value="legal">Legal (8.5" × 14")</option>
+                            <option value="custom">自定义尺寸</option>
+                        </select>
+                    </div>
+                    
+                    <div class="size-inputs" id="reverse-custom-size-inputs" style="display: none;">
+                        <div class="input-row">
+                            <label for="reverse-paper-width"><i class="fas fa-arrows-alt-h"></i> 纸张宽度 (mm)</label>
+                            <input type="number" id="reverse-paper-width" min="50" max="1000" value="210">
+                        </div>
+                        <div class="input-row">
+                            <label for="reverse-paper-height"><i class="fas fa-arrows-alt-v"></i> 纸张高度 (mm)</label>
+                            <input type="number" id="reverse-paper-height" min="50" max="1000" value="297">
+                        </div>
+                    </div>
+                    
+                    <div class="input-row">
+                        <label for="reverse-title-height"><i class="fas fa-heading"></i> 标题区域高度 (mm)</label>
+                        <input type="number" id="reverse-title-height" min="0" max="100" value="30">
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <h2><i class="fas fa-shapes"></i> 形状设置</h2>
+                    <div class="shape-options">
+                        <div class="shape-option active" data-shape="circle">
+                            <div class="shape-icon"><i class="fas fa-circle"></i></div>
+                            <div>圆形</div>
+                        </div>
+                        <div class="shape-option" data-shape="square">
+                            <div class="shape-icon"><i class="fas fa-square"></i></div>
+                            <div>正方形</div>
+                        </div>
+                        <div class="shape-option" data-shape="rectangle">
+                            <div class="shape-icon"><i class="fas fa-rectangle-landscape"></i></div>
+                            <div>长方形</div>
+                        </div>
+                    </div>
+                    
+                    <div class="input-row">
+                        <label for="reverse-shape-count"><i class="fas fa-hashtag"></i> 需要形状数量</label>
+                        <input type="number" id="reverse-shape-count" min="1" max="500" value="25">
+                    </div>
+                    
+                    <div class="input-row" id="reverse-shape-ratio-container" style="display: none;">
+                        <label for="reverse-shape-ratio"><i class="fas fa-balance-scale"></i> 宽高比 (长方形)</label>
+                        <input type="number" id="reverse-shape-ratio" min="0.1" max="10" step="0.1" value="1.5">
+                    </div>
+                    
+                    <div class="input-row">
+                        <label for="reverse-spacing"><i class="fas fa-arrows-alt"></i> 形状间距 (mm)</label>
+                        <input type="number" id="reverse-spacing" min="0" max="50" value="5">
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <h2><i class="fas fa-cogs"></i> 计算选项</h2>
+                    <div class="input-row">
+                        <label for="reverse-arrangement"><i class="fas fa-th"></i> 排列方式</label>
+                        <select id="reverse-arrangement">
+                            <option value="grid">网格排列</option>
+                            <option value="offset">交错排列 (仅圆形)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="input-row">
+                        <label for="reverse-optimization"><i class="fas fa-expand-arrows-alt"></i> 优化目标</label>
+                        <select id="reverse-optimization">
+                            <option value="size">最大化形状尺寸</option>
+                            <option value="balance">平衡尺寸与间距</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button id="reverse-calculate-btn" class="btn">
+                    <i class="fas fa-search"></i> 反推计算最佳布局
+                </button>
+            </div>
+        </div>
+        
+        <div class="visualization-area">
+            <div class="paper-container">
+                <div id="paper" class="paper">
+                    <!-- 纸张和形状将在这里动态生成 -->
+                </div>
+            </div>
+            
+            <div class="results-panel">
+                <h2><i class="fas fa-chart-bar"></i> 计算结果</h2>
+                <div class="results-grid">
+                    <div class="result-item">
+                        <div class="result-label">每行数量</div>
+                        <div id="cols-count" class="result-value">0</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">行数</div>
+                        <div id="rows-count" class="result-value">0</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">形状总数</div>
+                        <div id="total-count" class="result-value">0</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">形状尺寸</div>
+                        <div id="shape-size-result" class="result-value">0mm</div>
+                    </div>
+                </div>
+                <div class="results-grid" style="margin-top: 15px;">
+                    <div class="result-item">
+                        <div class="result-label">使用面积</div>
+                        <div id="used-area" class="result-value">0%</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">排列方式</div>
+                        <div id="arrangement-type" class="result-value">-</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">间距</div>
+                        <div id="spacing-result" class="result-value">0mm</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">宽高比</div>
+                        <div id="ratio-result" class="result-value">-</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="instructions">
+                <p><strong>正常模式：</strong> 设置形状尺寸，计算最佳排列方式和数量。</p>
+                <p><strong>反推模式：</strong> 指定形状数量，计算最佳排列方式和形状尺寸以填满可用区域。</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 纸张尺寸预设（单位：mm）
+        const paperSizes = {
+            a4: { width: 210, height: 297, name: "A4" },
+            a3: { width: 297, height: 420, name: "A3" },
+            letter: { width: 215.9, height: 279.4, name: "Letter" },
+            legal: { width: 215.9, height: 355.6, name: "Legal" }
+        };
+        
+        // 当前选中的形状
+        let selectedShape = "circle";
+        let currentMode = "normal"; // "normal" 或 "reverse"
+        
+        // DOM元素
+        // 正常模式元素
+        const paperSizeSelect = document.getElementById('paper-size');
+        const customSizeInputs = document.getElementById('custom-size-inputs');
+        const paperWidthInput = document.getElementById('paper-width');
+        const paperHeightInput = document.getElementById('paper-height');
+        const titleHeightInput = document.getElementById('title-height');
+        const shapeSizeInput = document.getElementById('shape-size');
+        const shapeSize2Input = document.getElementById('shape-size2');
+        const shapeSize2Container = document.getElementById('shape-size2-container');
+        const spacingInput = document.getElementById('spacing');
+        const arrangementSelect = document.getElementById('arrangement');
+        const maximizeSelect = document.getElementById('maximize');
+        const calculateBtn = document.getElementById('calculate-btn');
+        
+        // 反推模式元素
+        const reversePaperSizeSelect = document.getElementById('reverse-paper-size');
+        const reverseCustomSizeInputs = document.getElementById('reverse-custom-size-inputs');
+        const reversePaperWidthInput = document.getElementById('reverse-paper-width');
+        const reversePaperHeightInput = document.getElementById('reverse-paper-height');
+        const reverseTitleHeightInput = document.getElementById('reverse-title-height');
+        const reverseShapeCountInput = document.getElementById('reverse-shape-count');
+        const reverseShapeRatioInput = document.getElementById('reverse-shape-ratio');
+        const reverseShapeRatioContainer = document.getElementById('reverse-shape-ratio-container');
+        const reverseSpacingInput = document.getElementById('reverse-spacing');
+        const reverseArrangementSelect = document.getElementById('reverse-arrangement');
+        const reverseOptimizationSelect = document.getElementById('reverse-optimization');
+        const reverseCalculateBtn = document.getElementById('reverse-calculate-btn');
+        
+        // 通用元素
+        const paperElement = document.getElementById('paper');
+        const colsCountElement = document.getElementById('cols-count');
+        const rowsCountElement = document.getElementById('rows-count');
+        const totalCountElement = document.getElementById('total-count');
+        const shapeSizeResultElement = document.getElementById('shape-size-result');
+        const usedAreaElement = document.getElementById('used-area');
+        const arrangementTypeElement = document.getElementById('arrangement-type');
+        const spacingResultElement = document.getElementById('spacing-result');
+        const ratioResultElement = document.getElementById('ratio-result');
+        const shapeOptions = document.querySelectorAll('.shape-option');
+        const normalModeBtn = document.getElementById('normal-mode-btn');
+        const reverseModeBtn = document.getElementById('reverse-mode-btn');
+        const normalModeSection = document.getElementById('normal-mode');
+        const reverseModeSection = document.getElementById('reverse-mode');
+        
+        // 事件监听器
+        // 模式切换
+        normalModeBtn.addEventListener('click', function() {
+            setMode('normal');
+        });
+        
+        reverseModeBtn.addEventListener('click', function() {
+            setMode('reverse');
+        });
+        
+        function setMode(mode) {
+            currentMode = mode;
+            
+            // 更新按钮状态
+            normalModeBtn.classList.toggle('active', mode === 'normal');
+            reverseModeBtn.classList.toggle('active', mode === 'reverse');
+            
+            // 更新显示部分
+            normalModeSection.classList.toggle('active', mode === 'normal');
+            reverseModeSection.classList.toggle('active', mode === 'reverse');
+            
+            // 如果切换到反推模式，立即计算一次
+            if (mode === 'reverse') {
+                setTimeout(reverseCalculate, 100);
+            }
+        }
+        
+        // 正常模式事件
+        paperSizeSelect.addEventListener('change', function() {
+            if (this.value === 'custom') {
+                customSizeInputs.style.display = 'grid';
+            } else {
+                customSizeInputs.style.display = 'none';
+                // 更新自定义输入框以匹配预设值
+                const size = paperSizes[this.value];
+                paperWidthInput.value = size.width;
+                paperHeightInput.value = size.height;
+            }
+        });
+        
+        // 反推模式事件
+        reversePaperSizeSelect.addEventListener('change', function() {
+            if (this.value === 'custom') {
+                reverseCustomSizeInputs.style.display = 'grid';
+            } else {
+                reverseCustomSizeInputs.style.display = 'none';
+                // 更新自定义输入框以匹配预设值
+                const size = paperSizes[this.value];
+                reversePaperWidthInput.value = size.width;
+                reversePaperHeightInput.value = size.height;
+            }
+        });
+        
+        // 形状选择事件（两个模式共享）
+        shapeOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                shapeOptions.forEach(opt => opt.classList.remove('active'));
+                this.classList.add('active');
+                selectedShape = this.dataset.shape;
+                
+                // 更新正常模式的界面
+                if (selectedShape === 'rectangle') {
+                    shapeSize2Container.style.display = 'flex';
+                    shapeSizeInput.previousElementSibling.innerHTML = '<i class="fas fa-ruler-horizontal"></i> 宽度 (长方形) (mm)';
+                } else {
+                    shapeSize2Container.style.display = 'none';
+                    shapeSizeInput.previousElementSibling.innerHTML = '<i class="fas fa-ruler"></i> 形状尺寸 (mm)';
+                }
+                
+                // 更新反推模式的界面
+                if (selectedShape === 'rectangle') {
+                    reverseShapeRatioContainer.style.display = 'flex';
+                } else {
+                    reverseShapeRatioContainer.style.display = 'none';
+                }
+                
+                // 更新交错排列选项的可用性
+                updateArrangementOptions();
+            });
+        });
+        
+        function updateArrangementOptions() {
+            if (selectedShape === 'circle') {
+                arrangementSelect.innerHTML = `
+                    <option value="grid">网格排列</option>
+                    <option value="offset">交错排列</option>
+                `;
+                reverseArrangementSelect.innerHTML = `
+                    <option value="grid">网格排列</option>
+                    <option value="offset">交错排列</option>
+                `;
+            } else {
+                arrangementSelect.innerHTML = `
+                    <option value="grid">网格排列</option>
+                    <option value="offset" disabled>交错排列 (仅圆形)</option>
+                `;
+                reverseArrangementSelect.innerHTML = `
+                    <option value="grid">网格排列</option>
+                    <option value="offset" disabled>交错排列 (仅圆形)</option>
+                `;
+                if (arrangementSelect.value === 'offset') {
+                    arrangementSelect.value = 'grid';
+                }
+                if (reverseArrangementSelect.value === 'offset') {
+                    reverseArrangementSelect.value = 'grid';
+                }
+            }
+        }
+        
+        calculateBtn.addEventListener('click', normalCalculate);
+        reverseCalculateBtn.addEventListener('click', reverseCalculate);
+        
+        // 初始化
+        function init() {
+            // 设置初始纸张尺寸
+            const initialSize = paperSizes[paperSizeSelect.value];
+            paperWidthInput.value = initialSize.width;
+            paperHeightInput.value = initialSize.height;
+            reversePaperWidthInput.value = initialSize.width;
+            reversePaperHeightInput.value = initialSize.height;
+            
+            // 初始计算
+            normalCalculate();
+        }
+        
+        // 正常模式计算
+        function normalCalculate() {
+            // 获取用户输入
+            const paperWidth = parseFloat(paperWidthInput.value);
+            const paperHeight = parseFloat(paperHeightInput.value);
+            const titleHeight = parseFloat(titleHeightInput.value);
+            const shapeSize = parseFloat(shapeSizeInput.value);
+            const shapeSize2 = selectedShape === 'rectangle' ? parseFloat(shapeSize2Input.value) : shapeSize;
+            const spacing = parseFloat(spacingInput.value);
+            const arrangement = arrangementSelect.value;
+            const maximize = maximizeSelect.value;
+            
+            // 计算可用区域（减去标题区域）
+            const availableWidth = paperWidth;
+            const availableHeight = paperHeight - titleHeight;
+            
+            if (availableHeight <= 0) {
+                alert("标题区域高度不能超过纸张高度！");
+                return;
+            }
+            
+            // 根据优化目标计算布局
+            let cols, rows, effectiveShapeWidth, effectiveShapeHeight;
+            
+            if (maximize === 'count') {
+                // 最大化形状数量：使用用户指定的尺寸
+                effectiveShapeWidth = (selectedShape === 'circle' || selectedShape === 'square') ? shapeSize : shapeSize;
+                effectiveShapeHeight = (selectedShape === 'circle' || selectedShape === 'square') ? shapeSize : shapeSize2;
+                
+                // 计算行列数
+                cols = Math.floor((availableWidth + spacing) / (effectiveShapeWidth + spacing));
+                rows = Math.floor((availableHeight + spacing) / (effectiveShapeHeight + spacing));
+                
+                // 确保至少有一个形状
+                cols = Math.max(cols, 1);
+                rows = Math.max(rows, 1);
+            } else {
+                // 最大化形状大小：调整形状尺寸以填满空间
+                // 首先计算在可用空间内可以容纳多少行和列（基于最小尺寸5mm）
+                const minShapeSize = 5;
+                const estimatedCols = Math.floor((availableWidth + spacing) / (minShapeSize + spacing));
+                const estimatedRows = Math.floor((availableHeight + spacing) / (minShapeSize + spacing));
+                
+                // 计算最大可能的形状尺寸
+                const maxWidth = (availableWidth - (estimatedCols - 1) * spacing) / estimatedCols;
+                const maxHeight = (availableHeight - (estimatedRows - 1) * spacing) / estimatedRows;
+                
+                // 使用较小值以确保形状适合
+                const maxSize = Math.min(maxWidth, maxHeight);
+                
+                // 应用最大尺寸
+                effectiveShapeWidth = maxSize;
+                effectiveShapeHeight = selectedShape === 'rectangle' ? maxSize * (shapeSize2 / shapeSize) : maxSize;
+                
+                // 重新计算行列数
+                cols = Math.floor((availableWidth + spacing) / (effectiveShapeWidth + spacing));
+                rows = Math.floor((availableHeight + spacing) / (effectiveShapeHeight + spacing));
+                
+                // 更新输入框以显示计算出的尺寸
+                shapeSizeInput.value = Math.round(effectiveShapeWidth * 10) / 10;
+                if (selectedShape === 'rectangle') {
+                    shapeSize2Input.value = Math.round(effectiveShapeHeight * 10) / 10;
+                }
+            }
+            
+            // 交错排列的特殊计算（仅圆形）
+            if (arrangement === 'offset' && selectedShape === 'circle') {
+                // 交错排列时，行间距较小
+                const rowSpacing = spacing * 0.866; // 六边形紧密排列的比例因子
+                rows = Math.floor((availableHeight + rowSpacing) / (effectiveShapeHeight + rowSpacing));
+                
+                // 确保至少有一行
+                rows = Math.max(rows, 1);
+            }
+            
+            // 计算形状总数
+            let totalShapes = cols * rows;
+            
+            // 交错排列时，奇数行可能有不同数量的形状
+            if (arrangement === 'offset' && selectedShape === 'circle') {
+                const fullRows = Math.ceil(rows / 2);
+                const offsetRows = Math.floor(rows / 2);
+                totalShapes = fullRows * cols + offsetRows * Math.max(cols - 1, 1);
+            }
+            
+            // 计算使用面积百分比
+            const paperArea = paperWidth * paperHeight;
+            const titleArea = paperWidth * titleHeight;
+            let shapesArea;
+            
+            if (selectedShape === 'circle') {
+                const radius = effectiveShapeWidth / 2;
+                shapesArea = totalShapes * Math.PI * radius * radius;
+            } else if (selectedShape === 'square') {
+                shapesArea = totalShapes * effectiveShapeWidth * effectiveShapeWidth;
+            } else { // rectangle
+                shapesArea = totalShapes * effectiveShapeWidth * effectiveShapeHeight;
+            }
+            
+            const usedAreaPercent = Math.round(((titleArea + shapesArea) / paperArea) * 100);
+            
+            // 更新结果显示
+            colsCountElement.textContent = cols;
+            rowsCountElement.textContent = rows;
+            totalCountElement.textContent = totalShapes;
+            shapeSizeResultElement.textContent = 
+                selectedShape === 'rectangle' 
+                ? `${Math.round(effectiveShapeWidth)}×${Math.round(effectiveShapeHeight)}mm` 
+                : `${Math.round(effectiveShapeWidth)}mm`;
+            usedAreaElement.textContent = `${usedAreaPercent}%`;
+            arrangementTypeElement.textContent = arrangement === 'grid' ? '网格' : '交错';
+            spacingResultElement.textContent = `${spacing}mm`;
+            ratioResultElement.textContent = 
+                selectedShape === 'rectangle' 
+                ? (effectiveShapeHeight / effectiveShapeWidth).toFixed(2) 
+                : '1:1';
+            
+            // 可视化布局
+            visualizeLayout(paperWidth, paperHeight, titleHeight, 
+                           effectiveShapeWidth, effectiveShapeHeight, 
+                           cols, rows, spacing, arrangement);
+        }
+        
+        // 反推模式计算
+        function reverseCalculate() {
+            // 获取用户输入
+            const paperWidth = parseFloat(reversePaperWidthInput.value);
+            const paperHeight = parseFloat(reversePaperHeightInput.value);
+            const titleHeight = parseFloat(reverseTitleHeightInput.value);
+            const shapeCount = parseInt(reverseShapeCountInput.value);
+            const spacing = parseFloat(reverseSpacingInput.value);
+            const arrangement = reverseArrangementSelect.value;
+            const optimization = reverseOptimizationSelect.value;
+            const shapeRatio = selectedShape === 'rectangle' ? parseFloat(reverseShapeRatioInput.value) : 1;
+            
+            // 计算可用区域（减去标题区域）
+            const availableWidth = paperWidth;
+            const availableHeight = paperHeight - titleHeight;
+            
+            if (availableHeight <= 0) {
+                alert("标题区域高度不能超过纸张高度！");
+                return;
+            }
+            
+            if (shapeCount <= 0) {
+                alert("形状数量必须大于0！");
+                return;
+            }
+            
+            // 寻找最佳的行列组合
+            let bestCols = 1;
+            let bestRows = 1;
+            let bestShapeSize = 0;
+            let bestScore = 0;
+            
+            // 尝试不同的行数
+            for (let rows = 1; rows <= shapeCount; rows++) {
+                // 计算需要的列数
+                let cols = Math.ceil(shapeCount / rows);
+                
+                // 对于交错排列，需要特殊处理
+                if (arrangement === 'offset' && selectedShape === 'circle') {
+                    // 交错排列时，奇数行和偶数行的列数可能不同
+                    // 简化处理：假设所有行都有相同的列数，但实际形状数量可能不足
+                    // 这里我们使用近似的计算方法
+                    const fullRows = Math.ceil(rows / 2);
+                    const offsetRows = Math.floor(rows / 2);
+                    const maxShapes = fullRows * cols + offsetRows * Math.max(cols - 1, 1);
+                    
+                    // 如果这个排列容纳的形状数量不足，增加列数
+                    while (maxShapes < shapeCount && cols < 100) {
+                        cols++;
+                    }
+                }
+                
+                // 计算在这种行列组合下，形状的最大可能尺寸
+                let shapeWidth, shapeHeight;
+                
+                if (selectedShape === 'rectangle') {
+                    // 对于长方形，我们需要考虑宽高比
+                    // 计算在给定宽高比下的最大尺寸
+                    const cellWidth = (availableWidth - (cols - 1) * spacing) / cols;
+                    const cellHeight = (availableHeight - (rows - 1) * spacing) / rows;
+                    
+                    // 尝试两种方向：横向和纵向
+                    const size1 = Math.min(cellWidth, cellHeight * shapeRatio);
+                    const size2 = Math.min(cellWidth / shapeRatio, cellHeight);
+                    
+                    // 选择较大的一个
+                    if (size1 > size2) {
+                        shapeWidth = size1;
+                        shapeHeight = size1 / shapeRatio;
+                    } else {
+                        shapeWidth = size2 * shapeRatio;
+                        shapeHeight = size2;
+                    }
+                } else {
+                    // 对于圆形和正方形
+                    const cellWidth = (availableWidth - (cols - 1) * spacing) / cols;
+                    const cellHeight = (availableHeight - (rows - 1) * spacing) / rows;
+                    shapeWidth = shapeHeight = Math.min(cellWidth, cellHeight);
+                }
+                
+                // 计算得分
+                let score;
+                if (optimization === 'size') {
+                    // 最大化形状尺寸
+                    score = shapeWidth * shapeHeight;
+                } else {
+                    // 平衡尺寸与间距
+                    const shapeArea = shapeWidth * shapeHeight;
+                    const totalArea = availableWidth * availableHeight;
+                    const utilization = (shapeArea * shapeCount) / totalArea;
+                    score = shapeArea * utilization;
+                }
+                
+                // 更新最佳组合
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestCols = cols;
+                    bestRows = rows;
+                    bestShapeSize = shapeWidth;
+                }
+            }
+            
+            // 计算实际形状数量（可能比要求的略多）
+            let actualShapeCount = bestCols * bestRows;
+            if (arrangement === 'offset' && selectedShape === 'circle') {
+                const fullRows = Math.ceil(bestRows / 2);
+                const offsetRows = Math.floor(bestRows / 2);
+                actualShapeCount = fullRows * bestCols + offsetRows * Math.max(bestCols - 1, 1);
+            }
+            
+            // 对于长方形，计算高度
+            let shapeHeight = bestShapeSize;
+            if (selectedShape === 'rectangle') {
+                shapeHeight = bestShapeSize / shapeRatio;
+            }
+            
+            // 计算使用面积百分比
+            const paperArea = paperWidth * paperHeight;
+            const titleArea = paperWidth * titleHeight;
+            let shapesArea;
+            
+            if (selectedShape === 'circle') {
+                const radius = bestShapeSize / 2;
+                shapesArea = actualShapeCount * Math.PI * radius * radius;
+            } else if (selectedShape === 'square') {
+                shapesArea = actualShapeCount * bestShapeSize * bestShapeSize;
+            } else { // rectangle
+                shapesArea = actualShapeCount * bestShapeSize * shapeHeight;
+            }
+            
+            const usedAreaPercent = Math.round(((titleArea + shapesArea) / paperArea) * 100);
+            
+            // 更新结果显示
+            colsCountElement.textContent = bestCols;
+            rowsCountElement.textContent = bestRows;
+            totalCountElement.textContent = actualShapeCount;
+            shapeSizeResultElement.textContent = 
+                selectedShape === 'rectangle' 
+                ? `${Math.round(bestShapeSize)}×${Math.round(shapeHeight)}mm` 
+                : `${Math.round(bestShapeSize)}mm`;
+            usedAreaElement.textContent = `${usedAreaPercent}%`;
+            arrangementTypeElement.textContent = arrangement === 'grid' ? '网格' : '交错';
+            spacingResultElement.textContent = `${spacing}mm`;
+            ratioResultElement.textContent = 
+                selectedShape === 'rectangle' 
+                ? shapeRatio.toFixed(2) 
+                : '1:1';
+            
+            // 可视化布局
+            visualizeLayout(paperWidth, paperHeight, titleHeight, 
+                           bestShapeSize, shapeHeight, 
+                           bestCols, bestRows, spacing, arrangement, actualShapeCount);
+        }
+        
+        // 可视化布局函数
+        function visualizeLayout(paperWidth, paperHeight, titleHeight, 
+                                shapeWidth, shapeHeight, cols, rows, spacing, arrangement, maxShapes = null) {
+            // 清空纸张
+            paperElement.innerHTML = '';
+            
+            // 计算缩放比例以适合容器
+            const container = paperElement.parentElement;
+            const containerWidth = container.clientWidth - 40; // 减去内边距
+            const containerHeight = container.clientHeight - 40;
+            
+            const scaleX = containerWidth / paperWidth;
+            const scaleY = containerHeight / paperHeight;
+            const scale = Math.min(scaleX, scaleY, 1.5); // 限制最大缩放
+            
+            // 设置纸张尺寸
+            paperElement.style.width = `${paperWidth * scale}px`;
+            paperElement.style.height = `${paperHeight * scale}px`;
+            
+            // 添加标题区域
+            const titleArea = document.createElement('div');
+            titleArea.className = 'title-area';
+            titleArea.style.width = '100%';
+            titleArea.style.height = `${titleHeight * scale}px`;
+            titleArea.textContent = '标题区域';
+            paperElement.appendChild(titleArea);
+            
+            // 计算可用区域的起始位置
+            const startY = titleHeight * scale;
+            const scaledShapeWidth = shapeWidth * scale;
+            const scaledShapeHeight = shapeHeight * scale;
+            const scaledSpacing = spacing * scale;
+            
+            // 计算起始位置以使形状居中
+            const totalWidthNeeded = cols * scaledShapeWidth + (cols - 1) * scaledSpacing;
+            const totalHeightNeeded = rows * scaledShapeHeight + (rows - 1) * scaledSpacing;
+            
+            let startX = (paperWidth * scale - totalWidthNeeded) / 2;
+            let startYShapes = startY + (paperHeight * scale - startY - totalHeightNeeded) / 2;
+            
+            // 对于交错排列，调整起始位置
+            if (arrangement === 'offset' && selectedShape === 'circle') {
+                startX += scaledShapeWidth / 2;
+            }
+            
+            // 创建形状
+            let shapeIndex = 0;
+            let maxShapeIndex = maxShapes || cols * rows;
+            
+            for (let row = 0; row < rows; row++) {
+                let currentCols = cols;
+                
+                // 交错排列时，奇数行少一个形状
+                if (arrangement === 'offset' && selectedShape === 'circle' && row % 2 === 1) {
+                    currentCols = Math.max(cols - 1, 1);
+                    
+                    // 调整奇数行的起始X位置
+                    const rowStartX = startX + scaledShapeWidth / 2 + scaledSpacing / 2;
+                    
+                    for (let col = 0; col < currentCols; col++) {
+                        if (shapeIndex >= maxShapeIndex) break;
+                        createShape(row, col, rowStartX, shapeIndex);
+                        shapeIndex++;
+                    }
+                } else {
+                    for (let col = 0; col < currentCols; col++) {
+                        if (shapeIndex >= maxShapeIndex) break;
+                        createShape(row, col, startX, shapeIndex);
+                        shapeIndex++;
+                    }
+                }
+                
+                if (shapeIndex >= maxShapeIndex) break;
+            }
+            
+            // 创建单个形状的函数
+            function createShape(row, col, rowStartX, index) {
+                const shape = document.createElement('div');
+                shape.className = `shape ${selectedShape}`;
+                
+                // 设置位置和尺寸
+                const x = rowStartX + col * (scaledShapeWidth + scaledSpacing);
+                const y = startYShapes + row * (scaledShapeHeight + scaledSpacing);
+                
+                shape.style.left = `${x}px`;
+                shape.style.top = `${y}px`;
+                shape.style.width = `${scaledShapeWidth}px`;
+                
+                if (selectedShape === 'circle') {
+                    shape.style.height = `${scaledShapeWidth}px`;
+                    shape.style.borderRadius = '50%';
+                } else {
+                    shape.style.height = `${scaledShapeHeight}px`;
+                }
+                
+                // 添加形状编号
+                shape.textContent = index + 1;
+                
+                // 添加悬停效果
+                shape.addEventListener('mouseenter', function() {
+                    this.style.transform = 'scale(1.1)';
+                    this.style.zIndex = '10';
+                    this.style.boxShadow = '0 0 10px rgba(0,0,0,0.3)';
+                });
+                
+                shape.addEventListener('mouseleave', function() {
+                    this.style.transform = 'scale(1)';
+                    this.style.zIndex = '1';
+                    this.style.boxShadow = 'none';
+                });
+                
+                paperElement.appendChild(shape);
+            }
+        }
+        
+        // 初始化应用
+        init();
+    </script>
+</body>
+</html>
