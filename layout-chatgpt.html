@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>Paper Auto Layout</title>
+<style>
+    body {
+        margin: 0;
+        font-family: system-ui, sans-serif;
+        background: #eee;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    #controls {
+        padding: 8px;
+        background: #fff;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        border-bottom: 1px solid #ccc;
+    }
+
+    #paper {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #sheet {
+        background: white;
+        position: relative;
+        box-shadow: 0 0 10px rgba(0,0,0,.2);
+        display: grid;
+    }
+
+    .cell {
+        background: #4da3ff;
+        box-sizing: border-box;
+        border: 1px solid rgba(255,255,255,.5);
+    }
+</style>
+</head>
+<body>
+
+<div id="controls">
+    纸张：
+    <select id="paperType">
+        <option value="A4">A4</option>
+        <option value="B5">B5</option>
+    </select>
+
+    数量：
+    <input id="count" type="number" value="25" min="1">
+
+    <button onclick="render()">GO</button>
+</div>
+
+<div id="paper">
+    <div id="sheet"></div>
+</div>
+
+<script>
+const CM = 37.8; // 1cm ≈ 37.8px
+
+function render() {
+    const sheet = document.getElementById('sheet');
+    sheet.innerHTML = '';
+
+    const type = document.getElementById('paperType').value;
+    const count = +document.getElementById('count').value;
+
+    // 纸张尺寸（cm）
+    let w, h;
+    if (type === 'A4') { w = 21; h = 29.7; }
+    if (type === 'B5') { w = 18.2; h = 25.7; }
+
+    // 转 px
+    const sheetW = w * CM;
+    const sheetH = h * CM;
+
+    // 四周 3cm 留白
+    const margin = 3 * CM;
+    const usableW = sheetW - margin * 2;
+    const usableH = sheetH - margin * 2;
+
+    sheet.style.width = sheetW + 'px';
+    sheet.style.height = sheetH + 'px';
+
+    let best = { size: 0, rows: 0, cols: 0 };
+
+    for (let rows = 1; rows <= count; rows++) {
+        const cols = Math.ceil(count / rows);
+        const cellW = usableW / cols;
+        const cellH = usableH / rows;
+        const size = Math.min(cellW, cellH);
+
+        if (size > best.size) {
+            best = { size, rows, cols };
+        }
+    }
+
+    sheet.style.gridTemplateColumns = `repeat(${best.cols}, ${best.size}px)`;
+    sheet.style.gridTemplateRows = `repeat(${best.rows}, ${best.size}px)`;
+    sheet.style.padding = margin + 'px';
+
+    for (let i = 0; i < count; i++) {
+        const d =
