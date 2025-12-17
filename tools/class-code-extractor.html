@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8" />
+<title>Extractor</title>
+<style>
+    body { font-family: sans-serif; padding: 20px; }
+    textarea { width: 100%; height: 180px; padding: 10px; }
+    button { padding: 8px 16px; margin-top: 12px; cursor: pointer; }
+    .section { margin-top: 40px; }
+</style>
+</head>
+<body>
+
+<h2>文本提取器 (Class Code + URLs)</h2>
+
+<textarea id="input" placeholder="把超长文本贴这里..."></textarea>
+<br>
+<button onclick="extractAll()">提取！</button>
+
+<div class="section">
+    <h3>🎒 Google Classroom Class Codes（长度=8）</h3>
+    <pre id="codes"></pre>
+</div>
+
+<div class="section">
+    <h3>🔗 URLs（自动去重 no ダブリ）</h3>
+    <pre id="urls"></pre>
+</div>
+
+<script>
+function extractAll() {
+    const text = document.getElementById("input").value;
+
+    // --- 提取 class code：只保留长度=8 的字母数字组合 ---
+    // Google Classroom code：通常[a-z0-9]组成，这里按你要求严格长度8过滤
+    const rawCodes = text.toLowerCase().match(/[a-z0-9]{8}/g) || [];
+    const uniqueCodes = [...new Set(rawCodes)];
+
+    // 输出
+    document.getElementById("codes").textContent =
+        uniqueCodes.length ? uniqueCodes.join("\n") : "（没有找到长度为 8 的代码）";
+
+    // --- 提取 URL（自动去重） ---
+    const urlRegex = /(https?:\/\/[^\s]+)/gi;
+    const rawUrls = text.match(urlRegex) || [];
+    const uniqueUrls = [...new Set(rawUrls)];
+
+    // 输出
+    document.getElementById("urls").textContent =
+        uniqueUrls.length ? uniqueUrls.join("\n") : "（没有找到 URL）";
+}
+</script>
+
+</body>
+</html>
