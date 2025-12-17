@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tools Navigation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px 20px;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            border-radius: 12px;
+            color: white;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            border-left: 5px solid #6a11cb;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .card h3 i {
+            color: #6a11cb;
+        }
+        
+        .card p {
+            color: #4a5568;
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+        
+        .card-link {
+            display: inline-block;
+            background-color: #6a11cb;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+            align-self: flex-start;
+        }
+        
+        .card-link:hover {
+            background-color: #2575fc;
+        }
+        
+        .instructions {
+            background-color: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 40px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            border-top: 5px solid #2575fc;
+        }
+        
+        .instructions h2 {
+            color: #2d3748;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .instructions h2 i {
+            color: #2575fc;
+        }
+        
+        .instructions ol {
+            padding-left: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 12px;
+            padding-left: 10px;
+        }
+        
+        .instructions code {
+            background-color: #f1f5f9;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #d9480f;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #718096;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Tools Navigation</h1>
+        <p class="subtitle">A centralized hub for accessing various web development tools. Easily add, edit, or remove tools from the navigation.</p>
+    </header>
+    
+    <main>
+        <div class="container" id="tools-container">
+            <!-- Tools will be dynamically loaded here from the data.js file -->
+        </div>
+        
+        <div class="instructions">
+            <h2><i class="fas fa-info-circle"></i> How to Edit Navigation Items</h2>
+            <ol>
+                <li>To add a new tool, simply add a new object to the <code>toolsData</code> array in the <code>data.js</code> file.</li>
+                <li>To remove a tool, delete its object from the <code>toolsData</code> array.</li>
+                <li>To edit a tool, modify its properties in the <code>toolsData</code> array.</li>
+                <li>Each tool object should have: <code>id</code>, <code>title</code>, <code>description</code>, <code>link</code>, and <code>icon</code> properties.</li>
+            </ol>
+            <p><strong>Example tool object:</strong></p>
+            <code>
+                {<br>
+                &nbsp;&nbsp;id: 3,<br>
+                &nbsp;&nbsp;title: "New Tool",<br>
+                &nbsp;&nbsp;description: "Description of the new tool.",<br>
+                &nbsp;&nbsp;link: "new-tool.html",<br>
+                &nbsp;&nbsp;icon: "fas fa-toolbox"<br>
+                }
+            </code>
+        </div>
+    </main>
+    
+    <footer>
+        <p>Tools Navigation Page &copy; <span id="current-year">2023</span> | Easy to maintain and update</p>
+    </footer>
+
+    <!-- Data file containing tool information -->
+    <script>
+        // This data can be moved to a separate data.js file for better organization
+        const toolsData = [
+            {
+                id: 1,
+                title: "Class Code Extractor",
+                description: "Extract and organize CSS classes from HTML files. Useful for analyzing and refactoring codebases.",
+                link: "class-code-extractor.html",
+                icon: "fas fa-code"
+            },
+            {
+                id: 2,
+                title: "Layout Designer",
+                description: "Create and visualize responsive layouts with drag-and-drop functionality.",
+                link: "layout-designer.html",
+                icon: "fas fa-paint-brush"
+            },
+            {
+                id: 3,
+                title: "Color Palette Generator",
+                description: "Generate harmonious color palettes for your design projects with export options.",
+                link: "color-palette-generator.html",
+                icon: "fas fa-palette"
+            },
+            {
+                id: 4,
+                title: "Image Optimizer",
+                description: "Compress and optimize images for web use without losing quality.",
+                link: "image-optimizer.html",
+                icon: "fas fa-file-image"
+            },
+            {
+                id: 5,
+                title: "JSON Formatter",
+                description: "Format, validate, and beautify JSON data for better readability.",
+                link: "json-formatter.html",
+                icon: "fas fa-brackets-curly"
+            },
+            {
+                id: 6,
+                title: "Responsive Tester",
+                description: "Test your website's responsiveness across different screen sizes and devices.",
+                link: "responsive-tester.html",
+                icon: "fas fa-mobile-alt"
+            }
+        ];
+    </script>
+    
+    <!-- Main JavaScript file -->
+    <script>
+        // DOM elements
+        const toolsContainer = document.getElementById('tools-container');
+        const currentYearSpan = document.getElementById('current-year');
+        
+        // Set current year in footer
+        currentYearSpan.textContent = new Date().getFullYear();
+        
+        // Function to render tools
+        function renderTools() {
+            // Clear container
+            toolsContainer.innerHTML = '';
+            
+            // Loop through tools data and create cards
+            toolsData.forEach(tool => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                
+                card.innerHTML = `
+                    <h3><i class="${tool.icon}"></i> ${tool.title}</h3>
+                    <p>${tool.description}</p>
+                    <a href="${tool.link}" class="card-link">Open Tool <i class="fas fa-external-link-alt"></i></a>
+                `;
+                
+                toolsContainer.appendChild(card);
+            });
+        }
+        
+        // Initial render
+        renderTools();
+        
+        // Example of how to add a new tool dynamically (for demonstration)
+        // This could be triggered by a form in a real admin interface
+        function addNewTool(tool) {
+            toolsData.push(tool);
+            renderTools();
+        }
+        
+        // Example of how to remove a tool by ID
+        function removeTool(id) {
+            const index = toolsData.findIndex(tool => tool.id === id);
+            if (index !== -1) {
+                toolsData.splice(index, 1);
+                renderTools();
+            }
+        }
+        
+        // For demonstration: Log the tools data structure
+        console.log("To edit navigation items, modify the 'toolsData' array in the script tag.");
+        console.log("Current tools data:", toolsData);
+    </script>
+</body>
+</html>
