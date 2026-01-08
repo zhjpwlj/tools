@@ -590,8 +590,7 @@
                 emoji: "🎨",
                 featured: true
             }
-        ];
-                // ======================
+        ];        // ======================
         // APPLICATION CODE
         // ======================
         // No need to edit below this line for basic usage
@@ -751,8 +750,8 @@
         
         // Animation loop
         function animate() {
-            // Clear canvas with a lighter fade effect for more motion blur
-            ctx.fillStyle = 'rgba(10, 14, 23, 0.03)';
+            // FIXED: Clear canvas COMPLETELY with solid color (no transparency)
+            ctx.fillStyle = 'rgb(10, 14, 23)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
             // Update and draw particles
@@ -795,21 +794,31 @@
                 p.x += p.vx * currentSpeed;
                 p.y += p.vy * currentSpeed;
                 
-                // More aggressive edge bouncing
-                if (p.x < -50) p.active = false;
-                if (p.x > canvas.width + 50) p.active = false;
-                if (p.y < -50) p.active = false;
-                if (p.y > canvas.height + 50) p.active = false;
+                // Check bounds and deactivate if far off-screen
+                if (p.x < -100 || p.x > canvas.width + 100 || 
+                    p.y < -100 || p.y > canvas.height + 100) {
+                    p.active = false;
+                    continue;
+                }
                 
-                // Bounce off edges
-                if (p.x < 0) p.vx = Math.abs(p.vx) * (0.8 + Math.random() * 0.4);
-                if (p.x > canvas.width) p.vx = -Math.abs(p.vx) * (0.8 + Math.random() * 0.4);
-                if (p.y < 0) p.vy = Math.abs(p.vy) * (0.8 + Math.random() * 0.4);
-                if (p.y > canvas.height) p.vy = -Math.abs(p.vy) * (0.8 + Math.random() * 0.4);
+                // Bounce off edges with velocity adjustment
+                const bounceDampening = 0.95; // Slight energy loss on bounce
                 
-                // Keep within bounds
-                p.x = Math.max(-10, Math.min(canvas.width + 10, p.x));
-                p.y = Math.max(-10, Math.min(canvas.height + 10, p.y));
+                if (p.x < p.radius) {
+                    p.x = p.radius;
+                    p.vx = Math.abs(p.vx) * bounceDampening;
+                } else if (p.x > canvas.width - p.radius) {
+                    p.x = canvas.width - p.radius;
+                    p.vx = -Math.abs(p.vx) * bounceDampening;
+                }
+                
+                if (p.y < p.radius) {
+                    p.y = p.radius;
+                    p.vy = Math.abs(p.vy) * bounceDampening;
+                } else if (p.y > canvas.height - p.radius) {
+                    p.y = canvas.height - p.radius;
+                    p.vy = -Math.abs(p.vy) * bounceDampening;
+                }
                 
                 // Draw particle with enhanced glow for faster movement effect
                 ctx.beginPath();
@@ -832,17 +841,6 @@
                 ctx.arc(p.x, p.y, p.radius * 0.8, 0, Math.PI * 2);
                 ctx.fillStyle = `rgba(255, 255, 255, ${0.4 + Math.random() * 0.2})`;
                 ctx.fill();
-                
-                // Add motion trail for faster particles
-                const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
-                if (speed > 1) {
-                    ctx.beginPath();
-                    ctx.moveTo(p.x, p.y);
-                    ctx.lineTo(p.x - p.vx * 0.5, p.y - p.vy * 0.5);
-                    ctx.lineWidth = p.radius * 0.5;
-                    ctx.strokeStyle = `rgba(0, 217, 255, ${0.2})`;
-                    ctx.stroke();
-                }
             }
         }
         
