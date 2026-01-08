@@ -619,8 +619,8 @@
         let animationId;
         
         // SPEED SETTINGS - Adjust these to control animation speed
-        const PARTICLE_SPEED_MULTIPLIER = 2.5;  // Increased from ~1.0
-        const LINE_PULSE_SPEED = 0.15;          // Increased from 0.05
+        const PARTICLE_SPEED_MULTIPLIER = 5;  // Increased from ~1.0
+        const LINE_PULSE_SPEED = 0.2;          // Increased from 0.05
         
         // Initialize the application
         document.addEventListener('DOMContentLoaded', () => {
@@ -689,7 +689,7 @@
             lines = [];
             
             // Create particles
-            const particleCount = Math.min(Math.floor(window.innerWidth * window.innerHeight / 20000), 80);
+            const particleCount = Math.random() * 500 ;
             
             for (let i = 0; i < particleCount; i++) {
                 particles.push({
