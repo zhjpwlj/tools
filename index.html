@@ -3,121 +3,638 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DevTools Hub</title>
+    <title>Tools Navigation Hub</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --accent-primary: #3b82f6;
+            --accent-secondary: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --border-color: #475569;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px 20px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .logo i {
+            font-size: 36px;
+            color: var(--accent-primary);
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto 30px;
+        }
+
+        .search-container {
+            max-width: 500px;
+            margin: 0 auto 40px;
+            position: relative;
+        }
+
+        .search-box {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 16px;
+            color: var(--text-muted);
+            z-index: 2;
+        }
+
+        #search-input {
+            width: 100%;
+            padding: 14px 16px 14px 48px;
+            background-color: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 16px;
+            transition: var(--transition);
+        }
+
+        #search-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .categories {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+
+        .category-btn {
+            padding: 10px 20px;
+            background-color: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 30px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--transition);
+        }
+
+        .category-btn:hover {
+            background-color: var(--bg-tertiary);
+            transform: translateY(-2px);
+        }
+
+        .category-btn.active {
+            background-color: var(--accent-primary);
+            border-color: var(--accent-primary);
+            color: white;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .tool-card {
+            background-color: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid var(--border-color);
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow);
+            border-color: var(--accent-primary);
+        }
+
+        .tool-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .tool-icon {
+            font-size: 32px;
+            width: 64px;
+            height: 64px;
+            background-color: var(--bg-tertiary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .tool-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .tool-category {
+            color: var(--accent-primary);
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .tool-description {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            flex-grow: 1;
+        }
+
+        .tool-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .tool-link {
+            padding: 10px 20px;
+            background-color: var(--accent-primary);
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--transition);
+        }
+
+        .tool-link:hover {
+            background-color: var(--accent-secondary);
+            transform: translateY(-2px);
+        }
+
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 12px;
+        }
+
+        .empty-state p {
+            color: var(--text-muted);
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px 20px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border-color);
+            margin-top: 40px;
+        }
+
+        .instructions {
+            background-color: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 24px;
+            margin-top: 40px;
+            border-left: 4px solid var(--accent-primary);
+        }
+
+        .instructions h3 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .instructions h3 i {
+            color: var(--accent-primary);
+        }
+
+        .instructions ol {
+            padding-left: 20px;
+            margin-bottom: 16px;
+        }
+
+        .instructions li {
+            margin-bottom: 10px;
+            color: var(--text-secondary);
+        }
+
+        code {
+            background-color: var(--bg-tertiary);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: var(--accent-secondary);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .categories {
+                justify-content: flex-start;
+                overflow-x: auto;
+                padding-bottom: 10px;
+            }
+            
+            .category-btn {
+                white-space: nowrap;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .tool-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .tool-icon {
+                width: 56px;
+                height: 56px;
+                font-size: 28px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <!-- Sidebar for categories -->
-    <aside class="sidebar">
-        <div class="sidebar-header">
+    <div class="container">
+        <header>
             <div class="logo">
                 <i class="fas fa-tools"></i>
-                <h1>DevTools</h1>
             </div>
-            <div class="search-box">
-                <i class="fas fa-search"></i>
-                <input type="text" id="search-input" placeholder="Search tools...">
+            <h1>Tools Navigation Hub</h1>
+            <p class="subtitle">A centralized dashboard for all your development tools. Easily manage and access everything in one place.</p>
+            
+            <div class="search-container">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="search-input" placeholder="Search tools by name or description...">
+                </div>
             </div>
-        </div>
-        
-        <nav class="category-nav">
-            <ul id="category-list">
-                <!-- Categories will be loaded here from data.js -->
-            </ul>
-        </nav>
-        
-        <div class="sidebar-footer">
-            <button id="add-tool-btn" class="btn-add">
-                <i class="fas fa-plus"></i> Add New Tool
-            </button>
-            <div class="theme-toggle">
-                <span>Dark Mode</span>
-                <label class="switch">
-                    <input type="checkbox" id="theme-toggle" checked>
-                    <span class="slider"></span>
-                </label>
-            </div>
-        </div>
-    </aside>
-
-    <!-- Main content area -->
-    <main class="main-content">
-        <header class="main-header">
-            <div class="header-content">
-                <h2 id="current-category">All Tools</h2>
-                <p id="category-count">0 tools available</p>
-            </div>
-            <div class="header-actions">
-                <button id="edit-mode-btn" class="btn-icon" title="Edit Mode">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button id="view-toggle" class="btn-icon" title="Toggle View">
-                    <i class="fas fa-th-large"></i>
-                </button>
+            
+            <div class="categories" id="categories-container">
+                <!-- Categories will be populated by JavaScript -->
             </div>
         </header>
-
-        <div class="tools-container" id="tools-container">
-            <!-- Tools will be loaded here from data.js -->
-        </div>
-
-        <!-- Add/Edit Tool Modal -->
-        <div id="tool-modal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>Add New Tool</h3>
-                    <button class="close-modal">&times;</button>
-                </div>
-                <form id="tool-form">
-                    <div class="form-group">
-                        <label for="tool-name">Tool Name</label>
-                        <input type="text" id="tool-name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="tool-description">Description</label>
-                        <textarea id="tool-description" rows="3" required></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="tool-category">Category</label>
-                        <select id="tool-category" required>
-                            <!-- Categories will be populated from data.js -->
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="tool-link">Link</label>
-                        <input type="text" id="tool-link" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="tool-icon">Emoji Icon</label>
-                        <div class="emoji-selector">
-                            <input type="text" id="tool-icon" placeholder="🎨" maxlength="2">
-                            <div class="emoji-suggestions">
-                                <span class="emoji-option" data-emoji="🎨">🎨</span>
-                                <span class="emoji-option" data-emoji="⚡">⚡</span>
-                                <span class="emoji-option" data-emoji="🔧">🔧</span>
-                                <span class="emoji-option" data-emoji="📊">📊</span>
-                                <span class="emoji-option" data-emoji="🎯">🎯</span>
-                                <span class="emoji-option" data-emoji="💻">💻</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-actions">
-                        <button type="submit" class="btn-primary">Save Tool</button>
-                        <button type="button" class="btn-secondary close-modal">Cancel</button>
-                    </div>
-                </form>
+        
+        <main>
+            <div class="tools-grid" id="tools-container">
+                <!-- Tools will be populated by JavaScript -->
             </div>
-        </div>
-    </main>
+        </main>
+        
+        <footer>
+            <p>Tools Navigation Hub &copy; <span id="current-year"></span></p>
+        </footer>
+    </div>
 
-    <!-- Data file (external) -->
-    <script src="data.js"></script>
-    <!-- Main JavaScript -->
-    <script src="script.js"></script>
+    <script>
+        // ======================
+        // DATA CONFIGURATION
+        // ======================
+        // Edit this section to add, remove, or modify tools
+        const categories = [
+            { id: 'all', name: 'All Tools', emoji: '🔧' },
+            { id: 'design', name: 'Design', emoji: '🎨' },
+            { id: 'development', name: 'Development', emoji: '💻' },
+            { id: 'optimization', name: 'Optimization', emoji: '⚡' },
+            { id: 'analysis', name: 'Analysis', emoji: '📊' },
+            { id: 'utility', name: 'Utility', emoji: '🛠️' }
+        ];
+
+        const toolsData = [
+            {
+                id: 1,
+                name: "Class Code Extractor",
+                description: "Extract and organize CSS classes from HTML files. Useful for analyzing and refactoring codebases.",
+                link: "class-code-extractor.html",
+                category: "development",
+                emoji: "🔍"
+            },
+            {
+                id: 2,
+                name: "Layout Designer",
+                description: "Create and visualize responsive layouts with drag-and-drop functionality.",
+                link: "layout-designer.html",
+                category: "design",
+                emoji: "🎨"
+            },
+            {
+                id: 3,
+                name: "Color Palette Generator",
+                description: "Generate harmonious color palettes for your design projects with export options.",
+                link: "color-palette-generator.html",
+                category: "design",
+                emoji: "🌈"
+            },
+            {
+                id: 4,
+                name: "Image Optimizer",
+                description: "Compress and optimize images for web use without losing quality.",
+                link: "image-optimizer.html",
+                category: "optimization",
+                emoji: "🖼️"
+            },
+            {
+                id: 5,
+                name: "JSON Formatter",
+                description: "Format, validate, and beautify JSON data for better readability.",
+                link: "json-formatter.html",
+                category: "development",
+                emoji: "📝"
+            },
+            {
+                id: 6,
+                name: "Responsive Tester",
+                description: "Test your website's responsiveness across different screen sizes and devices.",
+                link: "responsive-tester.html",
+                category: "analysis",
+                emoji: "📱"
+            },
+            {
+                id: 7,
+                name: "Performance Analyzer",
+                description: "Analyze website performance metrics and get optimization suggestions.",
+                link: "performance-analyzer.html",
+                category: "analysis",
+                emoji: "📈"
+            },
+            {
+                id: 8,
+                name: "Code Minifier",
+                description: "Minify CSS, JavaScript, and HTML files for production deployment.",
+                link: "code-minifier.html",
+                category: "optimization",
+                emoji: "⚡"
+            },
+            {
+                id: 9,
+                name: "SVG Optimizer",
+                description: "Clean and optimize SVG files for web use, remove unnecessary metadata.",
+                link: "svg-optimizer.html",
+                category: "optimization",
+                emoji: "🖋️"
+            },
+            {
+                id: 10,
+                name: "Accessibility Checker",
+                description: "Check your website for accessibility issues and get improvement suggestions.",
+                link: "accessibility-checker.html",
+                category: "analysis",
+                emoji: "♿"
+            },
+            {
+                id: 11,
+                name: "Markdown Editor",
+                description: "A live preview markdown editor with export to HTML and PDF.",
+                link: "markdown-editor.html",
+                category: "development",
+                emoji: "📝"
+            },
+            {
+                id: 12,
+                name: "Browser Compatibility",
+                description: "Check CSS and JavaScript feature compatibility across different browsers.",
+                link: "browser-compatibility.html",
+                category: "analysis",
+                emoji: "🌐"
+            }
+        ];
+
+        // ======================
+        // APPLICATION CODE
+        // ======================
+        // No need to edit below this line for basic usage
+        
+        // DOM Elements
+        const categoriesContainer = document.getElementById('categories-container');
+        const toolsContainer = document.getElementById('tools-container');
+        const searchInput = document.getElementById('search-input');
+        const currentYear = document.getElementById('current-year');
+        
+        // State
+        let activeCategory = 'all';
+        let searchQuery = '';
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set current year in footer
+            currentYear.textContent = new Date().getFullYear();
+            
+            // Initialize categories
+            initCategories();
+            
+            // Initialize tools
+            initTools();
+            
+            // Setup event listeners
+            setupEventListeners();
+        });
+        
+        // Initialize categories
+        function initCategories() {
+            categoriesContainer.innerHTML = '';
+            
+            categories.forEach(category => {
+                const button = document.createElement('button');
+                button.className = `category-btn ${category.id === activeCategory ? 'active' : ''}`;
+                button.dataset.category = category.id;
+                button.innerHTML = `
+                    <span class="category-emoji">${category.emoji}</span>
+                    <span>${category.name}</span>
+                `;
+                
+                button.addEventListener('click', () => {
+                    // Update active category
+                    activeCategory = category.id;
+                    
+                    // Update UI
+                    document.querySelectorAll('.category-btn').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    button.classList.add('active');
+                    
+                    // Re-render tools
+                    initTools();
+                });
+                
+                categoriesContainer.appendChild(button);
+            });
+        }
+        
+        // Initialize tools
+        function initTools() {
+            toolsContainer.innerHTML = '';
+            
+            let filteredTools = [...toolsData];
+            
+            // Filter by category
+            if (activeCategory !== 'all') {
+                filteredTools = filteredTools.filter(tool => tool.category === activeCategory);
+            }
+            
+            // Filter by search query
+            if (searchQuery) {
+                const query = searchQuery.toLowerCase();
+                filteredTools = filteredTools.filter(tool => 
+                    tool.name.toLowerCase().includes(query) || 
+                    tool.description.toLowerCase().includes(query)
+                );
+            }
+            
+            // Display tools or empty state
+            if (filteredTools.length === 0) {
+                const emptyState = document.createElement('div');
+                emptyState.className = 'empty-state';
+                emptyState.innerHTML = `
+                    <i class="fas fa-search"></i>
+                    <h3>No tools found</h3>
+                    <p>${searchQuery ? 'Try a different search term' : 'No tools available in this category'}</p>
+                `;
+                toolsContainer.appendChild(emptyState);
+            } else {
+                filteredTools.forEach(tool => {
+                    const category = categories.find(c => c.id === tool.category);
+                    const toolElement = createToolElement(tool, category);
+                    toolsContainer.appendChild(toolElement);
+                });
+            }
+        }
+        
+        // Create tool element
+        function createToolElement(tool, category) {
+            const card = document.createElement('div');
+            card.className = 'tool-card';
+            
+            card.innerHTML = `
+                <div class="tool-header">
+                    <div class="tool-icon">${tool.emoji}</div>
+                    <div>
+                        <h3 class="tool-title">${tool.name}</h3>
+                        <div class="tool-category">${category.name}</div>
+                    </div>
+                </div>
+                <p class="tool-description">${tool.description}</p>
+                <div class="tool-footer">
+                    <a href="${tool.link}" class="tool-link" target="_blank">
+                        <i class="fas fa-external-link-alt"></i>
+                        Open Tool
+                    </a>
+                </div>
+            `;
+            
+            return card;
+        }
+        
+        // Setup event listeners
+        function setupEventListeners() {
+            // Search functionality
+            searchInput.addEventListener('input', (e) => {
+                searchQuery = e.target.value;
+                initTools();
+            });
+            
+            // Clear search on escape key
+            searchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    searchInput.value = '';
+                    searchQuery = '';
+                    initTools();
+                }
+            });
+        }
+        
+        // Log data structure for easy editing reference
+        console.log('To edit tools, modify the "toolsData" array in the JavaScript section.');
+        console.log('Current tools:', toolsData);
+    </script>
 </body>
 </html>
