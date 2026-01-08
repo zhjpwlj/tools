@@ -713,7 +713,7 @@
         
         // Create connections for nearby particles automatically
         function createConnectionsForNearbyParticles() {
-            const connectionDistance = 150; // Distance threshold for creating connections
+            const connectionDistance = 500; // Distance threshold for creating connections
             
             for (let i = 0; i < particles.length; i++) {
                 const p1 = particles[i];
@@ -871,7 +871,7 @@
                 line.distance = Math.sqrt(dx * dx + dy * dy);
                 
                 // Remove lines that are too far apart
-                if (line.distance > 200) {
+                if (line.distance > 500) {
                     line.active = false;
                     
                     // Remove connection from particles
