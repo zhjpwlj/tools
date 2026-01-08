@@ -617,6 +617,11 @@
         let ctx;
         let animationId;
         
+        // SPEED SETTINGS - Adjust these to control animation speed
+        const PARTICLE_SPEED_MULTIPLIER = 2.5;  // Increased from ~1.0
+        const LINE_PULSE_SPEED = 0.15;          // Increased from 0.05
+        const CONNECTION_CHANGE_RATE = 0.03;    // Increased from 0.01
+        
         // Initialize the application
         document.addEventListener('DOMContentLoaded', () => {
             // Set current year in footer
@@ -684,18 +689,20 @@
             lines = [];
             
             // Create particles
-            const particleCount = Math.random() * 500
+            const particleCount = Math.random() * 500 ;
             
             for (let i = 0; i < particleCount; i++) {
                 particles.push({
                     x: Math.random() * canvas.width,
                     y: Math.random() * canvas.height,
-                    vx: (Math.random() - 0.5) * 0.5,
-                    vy: (Math.random() - 0.5) * 0.5,
+                    vx: (Math.random() - 0.5) * 1.5 * PARTICLE_SPEED_MULTIPLIER,
+                    vy: (Math.random() - 0.5) * 1.5 * PARTICLE_SPEED_MULTIPLIER,
                     radius: Math.random() * 2 + 1,
-                    color: `rgba(0, 217, 255, ${Math.random() * 0.3 + 0.1})`,
-                    glow: Math.random() * 0.1 + 0.05,
-                    connections: []
+                    color: `rgba(0, 217, 255, ${Math.random() * 0.4 + 0.2})`,
+                    glow: Math.random() * 0.15 + 0.1,
+                    connections: [],
+                    // Add some randomness to speed for variety
+                    speedVariation: Math.random() * 0.5 + 0.75
                 });
             }
             
@@ -706,7 +713,7 @@
         // Create connections between particles
         function createConnections() {
             lines = [];
-            const maxDistance = 150;
+            const maxDistance = 180; // Increased connection range
             
             for (let i = 0; i < particles.length; i++) {
                 particles[i].connections = [];
@@ -720,11 +727,12 @@
                         const line = {
                             from: i,
                             to: j,
-                            width: Math.random() * 0.8 + 0.2,
-                            opacity: 0.3 * (1 - distance / maxDistance),
+                            width: Math.random() * 1.2 + 0.3, // Thicker lines
+                            opacity: 0.4 * (1 - distance / maxDistance), // More visible
                             distance: distance,
                             active: true,
-                            pulsePhase: Math.random() * Math.PI * 2
+                            pulsePhase: Math.random() * Math.PI * 2,
+                            pulseSpeed: Math.random() * 0.2 + 0.1 // Faster pulsing
                         };
                         
                         lines.push(line);
@@ -737,8 +745,8 @@
         
         // Animation loop
         function animate() {
-            // Clear canvas with a slight fade effect
-            ctx.fillStyle = 'rgba(10, 14, 23, 0.05)';
+            // Clear canvas with a lighter fade effect for more motion blur
+            ctx.fillStyle = 'rgba(10, 14, 23, 0.03)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
             // Update and draw particles
@@ -747,12 +755,12 @@
             // Update and draw lines
             updateLines();
             
-            // Randomly create/disconnect lines
-            if (Math.random() < 0.01) {
+            // Randomly create/disconnect lines - increased frequency
+            if (Math.random() < CONNECTION_CHANGE_RATE) {
                 createRandomConnection();
             }
             
-            if (Math.random() < 0.005) {
+            if (Math.random() < CONNECTION_CHANGE_RATE * 0.6) {
                 removeRandomConnection();
             }
             
@@ -760,54 +768,79 @@
             animationId = requestAnimationFrame(animate);
         }
         
-        // Update particles
+        // Update particles with faster movement
         function updateParticles() {
             for (let i = 0; i < particles.length; i++) {
                 const p = particles[i];
                 
-                // Update position
-                p.x += p.vx;
-                p.y += p.vy;
+                // Apply speed variation
+                const currentSpeed = PARTICLE_SPEED_MULTIPLIER * p.speedVariation;
                 
-                // Bounce off edges
-                if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
-                if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+                // Update position with higher speed
+                p.x += p.vx * currentSpeed;
+                p.y += p.vy * currentSpeed;
                 
-                // Keep within bounds
-                p.x = Math.max(0, Math.min(canvas.width, p.x));
-                p.y = Math.max(0, Math.min(canvas.height, p.y));
+                // More aggressive edge bouncing
+                if (p.x < 0) {
+                    p.vx = Math.abs(p.vx) * (0.8 + Math.random() * 0.4);
+                }
+                if (p.x > canvas.width) {
+                    p.vx = -Math.abs(p.vx) * (0.8 + Math.random() * 0.4);
+                }
+                if (p.y < 0) {
+                    p.vy = Math.abs(p.vy) * (0.8 + Math.random() * 0.4);
+                }
+                if (p.y > canvas.height) {
+                    p.vy = -Math.abs(p.vy) * (0.8 + Math.random() * 0.4);
+                }
                 
-                // Draw particle
+                // Keep within bounds with slight random variation
+                p.x = Math.max(-10, Math.min(canvas.width + 10, p.x));
+                p.y = Math.max(-10, Math.min(canvas.height + 10, p.y));
+                
+                // Draw particle with enhanced glow for faster movement effect
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
                 
-                // Glow effect
+                // More intense glow effect
                 const gradient = ctx.createRadialGradient(
                     p.x, p.y, 0,
-                    p.x, p.y, p.radius * 3
+                    p.x, p.y, p.radius * 4
                 );
                 gradient.addColorStop(0, p.color);
+                gradient.addColorStop(0.7, `rgba(0, 217, 255, ${p.glow * 0.5})`);
                 gradient.addColorStop(1, 'rgba(0, 217, 255, 0)');
                 
                 ctx.fillStyle = gradient;
                 ctx.fill();
                 
-                // Core glow
+                // Brighter core for fast-moving particles
                 ctx.beginPath();
-                ctx.arc(p.x, p.y, p.radius * 0.5, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                ctx.arc(p.x, p.y, p.radius * 0.8, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 255, ${0.4 + Math.random() * 0.2})`;
                 ctx.fill();
+                
+                // Add motion trail for faster particles
+                const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+                if (speed > 1) {
+                    ctx.beginPath();
+                    ctx.moveTo(p.x, p.y);
+                    ctx.lineTo(p.x - p.vx * 0.5, p.y - p.vy * 0.5);
+                    ctx.lineWidth = p.radius * 0.5;
+                    ctx.strokeStyle = `rgba(0, 217, 255, ${0.2})`;
+                    ctx.stroke();
+                }
             }
         }
         
-        // Update lines
+        // Update lines with faster pulsing
         function updateLines() {
             for (let i = 0; i < lines.length; i++) {
                 const line = lines[i];
                 
-                // Update pulse animation
-                line.pulsePhase += 0.05;
-                const pulseValue = Math.sin(line.pulsePhase) * 0.5 + 0.5;
+                // Update pulse animation faster
+                line.pulsePhase += line.pulseSpeed * LINE_PULSE_SPEED * 3;
+                const pulseValue = Math.sin(line.pulsePhase) * 0.7 + 0.3;
                 
                 // Get particle positions
                 const p1 = particles[line.from];
@@ -818,43 +851,65 @@
                 const dy = p1.y - p2.y;
                 line.distance = Math.sqrt(dx * dx + dy * dy);
                 
-                // Remove lines that are too far apart
-                if (line.distance > 200) {
+                // Remove lines that are too far apart (increased threshold)
+                if (line.distance > 250) {
                     line.active = false;
                     continue;
                 }
                 
-                // Calculate line opacity based on distance and pulse
-                const opacity = line.opacity * (0.7 + 0.3 * pulseValue) * (1 - line.distance / 200);
+                // Calculate line opacity - more dynamic
+                const baseOpacity = line.opacity * (0.8 + 0.4 * pulseValue);
+                const distanceFactor = 1 - line.distance / 250;
+                const opacity = baseOpacity * distanceFactor * (0.9 + 0.2 * Math.sin(Date.now() * 0.01));
                 
-                // Draw line
+                // Draw main line
                 ctx.beginPath();
                 ctx.moveTo(p1.x, p1.y);
                 ctx.lineTo(p2.x, p2.y);
-                ctx.lineWidth = line.width * (0.8 + 0.4 * pulseValue);
+                ctx.lineWidth = line.width * (0.8 + 0.6 * pulseValue);
                 ctx.strokeStyle = `rgba(0, 217, 255, ${opacity})`;
+                ctx.lineCap = 'round';
                 ctx.stroke();
                 
-                // Add glow effect to line
+                // Add brighter inner line for speed effect
                 ctx.beginPath();
                 ctx.moveTo(p1.x, p1.y);
                 ctx.lineTo(p2.x, p2.y);
-                ctx.lineWidth = line.width * (0.8 + 0.4 * pulseValue) + 2;
-                ctx.strokeStyle = `rgba(0, 217, 255, ${opacity * 0.3})`;
+                ctx.lineWidth = line.width * (0.3 + 0.3 * pulseValue);
+                ctx.strokeStyle = `rgba(255, 255, 255, ${opacity * 0.8})`;
+                ctx.lineCap = 'round';
+                ctx.stroke();
+                
+                // Add outer glow for faster appearance
+                ctx.beginPath();
+                ctx.moveTo(p1.x, p1.y);
+                ctx.lineTo(p2.x, p2.y);
+                ctx.lineWidth = line.width * (0.8 + 0.6 * pulseValue) + 4;
+                ctx.strokeStyle = `rgba(0, 217, 255, ${opacity * 0.2})`;
+                ctx.lineCap = 'round';
                 ctx.stroke();
             }
             
             // Remove inactive lines
             lines = lines.filter(line => line.active);
+            
+            // More frequent line updates
+            if (Math.random() < 0.02) {
+                const randomLineIndex = Math.floor(Math.random() * lines.length);
+                if (randomLineIndex < lines.length) {
+                    const line = lines[randomLineIndex];
+                    line.width = Math.random() * 1.2 + 0.3;
+                    line.opacity = Math.random() * 0.4 + 0.2;
+                }
+            }
         }
         
         // Create random connection
         function createRandomConnection() {
             if (particles.length < 2) return;
             
-            // Find two particles that aren't already connected
-            let attempts = 0;
-            while (attempts < 50) {
+            // Try more attempts for faster connections
+            for (let attempts = 0; attempts < 20; attempts++) {
                 const i = Math.floor(Math.random() * particles.length);
                 const j = Math.floor(Math.random() * particles.length);
                 
@@ -863,15 +918,16 @@
                     const dy = particles[i].y - particles[j].y;
                     const distance = Math.sqrt(dx * dx + dy * dy);
                     
-                    if (distance < 150) {
+                    if (distance < 200) { // Increased connection range
                         const line = {
                             from: i,
                             to: j,
-                            width: Math.random() * 0.8 + 0.2,
-                            opacity: 0.3 * (1 - distance / 150),
+                            width: Math.random() * 1.2 + 0.3,
+                            opacity: 0.4 * (1 - distance / 200),
                             distance: distance,
                             active: true,
-                            pulsePhase: Math.random() * Math.PI * 2
+                            pulsePhase: Math.random() * Math.PI * 2,
+                            pulseSpeed: Math.random() * 0.3 + 0.1
                         };
                         
                         lines.push(line);
@@ -880,7 +936,6 @@
                         break;
                     }
                 }
-                attempts++;
             }
         }
         
@@ -897,7 +952,10 @@
                 if (fromIndex !== -1) particles[line.from].connections.splice(fromIndex, 1);
                 if (toIndex !== -1) particles[line.to].connections.splice(toIndex, 1);
                 
-                // Remove line
+                // Animate line disappearance
+                line.active = false;
+                
+                // Remove line immediately for faster updates
                 lines.splice(index, 1);
             }
         }
@@ -1065,6 +1123,18 @@
                 // Recreate connections
                 createConnections();
             });
+            
+            // Add keyboard shortcuts for speed control (for debugging/development)
+            document.addEventListener('keydown', (e) => {
+                if (e.ctrlKey && e.key === ']') {
+                    PARTICLE_SPEED_MULTIPLIER *= 1.2;
+                    console.log(`Speed increased to: ${PARTICLE_SPEED_MULTIPLIER.toFixed(1)}x`);
+                }
+                if (e.ctrlKey && e.key === '[') {
+                    PARTICLE_SPEED_MULTIPLIER *= 0.8;
+                    console.log(`Speed decreased to: ${PARTICLE_SPEED_MULTIPLIER.toFixed(1)}x`);
+                }
+            });
         }
         
         // Clean up animation on page unload
@@ -1078,6 +1148,7 @@
         console.log('🔧 Nexus Tools Interface');
         console.log('To edit tools, modify the "toolsData" array in the JavaScript section.');
         console.log('All links are prefixed with "tools/" as requested.');
+        console.log('Particle Speed: 2.5x (Press Ctrl+] to increase, Ctrl+[ to decrease)');
     </script>
 </body>
 </html>
